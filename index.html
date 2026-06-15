@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>h&D store | متجر الملابس والإكسسوارات الفاخر</title>
+  <meta name="description" content="h&D store - متجر إلكتروني مصري متخصص في بيع الملابس والإكسسوارات الفاخرة">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { heading: ['El Messiri', 'serif'], body: ['Tajawal', 'sans-serif'] },
+          colors: { primary: '#1a1a1a', cream: '#fafaf7', accent: '#8b6f47' }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-cream">
+
+  <!-- Navbar -->
+  <nav class="navbar-main">
+    <div class="navbar-inner">
+      <a href="index.html" class="brand-name">h&D <span class="brand-sub">store</span></a>
+      
+      <div class="nav-links">
+        <a href="#home" class="nav-link-item">الرئيسية</a>
+        <a href="#products" class="nav-link-item">المنتجات</a>
+        <a href="#features" class="nav-link-item">مميزاتنا</a>
+        <a href="admin.html" class="nav-link-item">الإدارة</a>
+      </div>
+      
+      <div class="nav-actions">
+        <!-- ✅ المفضلة (زر يفتح نافذة - لا يذهب للأدمن) -->
+        <button onclick="openWishlist()" class="icon-btn" title="المفضلة" aria-label="المفضلة">
+          🤍
+          <span id="wishlist-count" class="wishlist-badge" style="display:none;">0</span>
+        </button>
+        
+        <!-- السلة -->
+        <button onclick="openCart()" class="icon-btn" aria-label="السلة">
+          🛍️
+          <span id="cart-count" class="cart-badge" style="display:none;">0</span>
+        </button>
+        
+        <!-- لوحة الإدارة -->
+        <a href="admin.html" class="icon-btn" title="لوحة الإدارة" aria-label="لوحة الإدارة">🛡️</a>
+        
+        <!-- زر القائمة للموبايل -->
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="القائمة">☰</button>
+      </div>
+    </div>
+    
+    <!-- القائمة المتنقلة -->
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay" onclick="toggleMobileMenu()"></div>
+    <div id="mobile-menu" class="mobile-menu">
+      <div class="menu-header">
+        <div class="menu-title">القائمة</div>
+      </div>
+      <a href="#home" class="mobile-menu-link" onclick="toggleMobileMenu()"><span class="icon">🏠</span> الرئيسية</a>
+      <a href="#products" class="mobile-menu-link" onclick="toggleMobileMenu()"><span class="icon">📦</span> المنتجات</a>
+      <a href="#features" class="mobile-menu-link" onclick="toggleMobileMenu()"><span class="icon">✨</span> مميزاتنا</a>
+      <a href="#" class="mobile-menu-link" onclick="openWishlist(); toggleMobileMenu();"><span class="icon">🤍</span> المفضلة</a>
+      <a href="#" class="mobile-menu-link" onclick="openCart(); toggleMobileMenu();"><span class="icon">🛍️</span> السلة</a>
+      <a href="admin.html" class="mobile-menu-link"><span class="icon">🛡️</span> لوحة الإدارة</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section id="home" class="hero-section">
+    <div class="hero-content">
+      <div class="hero-text">
+        <span class="hero-badge">✦ مجموعة حصرية</span>
+        <h1 class="hero-title">أناقة <span class="accent-word">بلا حدود</span></h1>
+        <p class="hero-subtitle">اكتشف مجموعتنا الفاخرة من الملابس والإكسسوارات</p>
+        <div class="hero-actions">
+          <a href="#products" class="btn btn-accent btn-lg">تسوق الآن ←</a>
+          <a href="#features" class="btn btn-outline-white btn-lg">تعرف علينا</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search Bar -->
+  <section class="search-section">
+    <div class="search-container">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="search-input" class="search-input" placeholder="ابحث عن منتجك المفضل...">
+      <div id="search-results" class="search-results"></div>
+    </div>
+  </section>
+
+  <!-- Products Section -->
+  <section id="products" style="max-width:1400px;margin:0 auto;padding:4rem 1.5rem;">
+    <div class="section-header">
+      <span class="section-pretitle">تسوق الآن</span>
+      <h2 class="section-title">منتجاتنا المميزة</h2>
+      <p class="section-subtitle">تشكيلة مختارة بعناية من أرقى القطع</p>
+    </div>
+    
+    <div class="filters-bar">
+      <div id="category-buttons" class="categories-pills"></div>
+      <select class="sort-select" onchange="activeSort = this.value; renderProducts();">
+        <option value="newest">الأحدث</option>
+        <option value="price-asc">السعر: من الأقل للأعلى</option>
+        <option value="price-desc">السعر: من الأعلى للأقل</option>
+        <option value="name">الاسم</option>
+      </select>
+    </div>
+    
+    <div id="products-grid" class="products-grid"></div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="section-header">
+      <span class="section-pretitle">لماذا نحن</span>
+      <h2 class="section-title">مميزاتنا</h2>
+    </div>
+    <div id="features-section" class="features-grid"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer"></footer>
+
+  <!-- ===========================
+       نوافذ منبثقة
+       =========================== -->
+  
+  <!-- ✅ نافذة المفضلة (الجديدة) -->
+  <div id="wishlist-modal" class="modal-overlay">
+    <div class="modal-content cart-modal-content">
+      <div class="cart-header">
+        <h2 class="cart-title">🤍 المفضلة</h2>
+        <button onclick="closeWishlist()" class="modal-close" aria-label="إغلاق">✕</button>
+      </div>
+      <div id="wishlist-items"></div>
+      <div class="cart-summary">
+        <button onclick="closeWishlist(); document.getElementById('products').scrollIntoView({behavior:'smooth'});" class="btn-secondary" style="width:100%;">
+          🛍️ متابعة التسوق
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة تفاصيل المنتج -->
+  <div id="product-modal" class="modal-overlay">
+    <div class="modal-content" id="product-modal-content"></div>
+  </div>
+
+  <!-- نافذة السلة -->
+  <div id="cart-modal" class="modal-overlay">
+    <div class="modal-content cart-modal-content">
+      <div class="cart-header">
+        <h2 class="cart-title">سلة التسوق</h2>
+        <button onclick="closeCart()" class="modal-close" aria-label="إغلاق">✕</button>
+      </div>
+      <div id="cart-items"></div>
+      
+      <div style="display:flex;gap:0.5rem;margin:1.5rem 0;">
+        <input type="text" id="coupon-input" placeholder="🎟️ كود الخصم" class="form-input" style="flex:1;">
+        <button onclick="applyCoupon()" class="btn-secondary">تطبيق</button>
+      </div>
+      
+      <div class="cart-summary">
+        <div class="summary-row"><span>المجموع الفرعي</span><span id="cart-subtotal">0 ج.م</span></div>
+        <div class="summary-row"><span>الخصم</span><span id="cart-discount">0 ج.م</span></div>
+        <div class="summary-row total"><span>الإجمالي</span><span id="cart-total">0 ج.م</span></div>
+        <button onclick="openCheckout()" class="btn btn-accent btn-lg" style="width:100%;margin-top:1.5rem;">
+          💬 إتمام الطلب عبر واتساب
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة الدفع -->
+  <div id="checkout-modal" class="modal-overlay">
+    <div class="modal-content checkout-modal-content">
+      <div class="checkout-header">
+        <h2 class="checkout-title">إتمام الطلب</h2>
+        <button onclick="closeCheckout()" class="modal-close" aria-label="إغلاق">✕</button>
+      </div>
+      <form onsubmit="completeOrder(event)" style="display:flex;flex-direction:column;gap:1rem;">
+        <div class="form-group">
+          <label class="form-label">الاسم الكامل *</label>
+          <input type="text" name="name" required class="form-input" placeholder="أدخل اسمك">
+        </div>
+        <div class="form-group">
+          <label class="form-label">رقم الجوال *</label>
+          <input type="tel" name="phone" required class="form-input" placeholder="05xxxxxxxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">المدينة *</label>
+          <input type="text" name="city" required class="form-input" placeholder="مثال: القاهرة">
+        </div>
+        <div class="form-group">
+          <label class="form-label">العنوان التفصيلي *</label>
+          <textarea name="address" required rows="2" class="form-textarea" placeholder="الحي، الشارع، رقم المبنى"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ملاحظات (اختياري)</label>
+          <textarea name="notes" rows="2" class="form-textarea" placeholder="أي تعليمات خاصة"></textarea>
+        </div>
+        <div style="background:var(--background-alt);padding:1rem;border-radius:8px;font-size:0.85rem;color:var(--text-muted);">
+          ℹ️ عند التأكيد، سيتم فتح واتساب مع تفاصيل طلبك جاهزة للإرسال
+        </div>
+        <button type="submit" class="btn btn-accent btn-lg" style="width:100%;">
+          💬 تأكيد وإرسال عبر واتساب
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+</body>
+</html>

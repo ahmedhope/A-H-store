@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة الإدارة | h&D store</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/admin.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { 
+            heading: ['El Messiri', 'serif'], 
+            body: ['Tajawal', 'sans-serif'] 
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <!-- ===========================
+       صفحة تسجيل الدخول
+       =========================== -->
+  <div id="login-page">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="text-center">
+          <div class="login-logo">🛍️</div>
+          <h1 class="brand-name">h&amp;D <span class="brand-sub">store</span></h1>
+          <p class="subtitle">لوحة تحكم الإدارة v5.0</p>
+        </div>
+        
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">👤 اسم المستخدم</label>
+            <input type="text" name="username" required autocomplete="username" 
+                   class="form-input" placeholder="أدخل اسم المستخدم">
+          </div>
+          <div class="form-group">
+            <label class="form-label">🔒 كلمة المرور</label>
+            <input type="password" name="password" required autocomplete="current-password" 
+                   class="form-input" placeholder="••••••••">
+          </div>
+          <div style="text-align:left;margin-bottom:1.25rem;">
+            <a href="#" onclick="showForgotPassword(); return false;" 
+               style="font-size:0.82rem;color:var(--accent);">نسيت كلمة المرور؟</a>
+          </div>
+          <button type="submit" class="btn-primary">🔓 تسجيل الدخول</button>
+          
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===========================
+       صفحة استعادة كلمة المرور
+       =========================== -->
+  <div id="forgot-password-page" class="hidden">
+    <div class="login-container">
+      <div class="login-card">
+        <div class="text-center" style="margin-bottom:1.5rem;">
+          <div class="login-logo" style="background:linear-gradient(135deg,var(--info),#6b8db5);">🔐</div>
+          <h1 class="brand-name">استعادة كلمة المرور</h1>
+        </div>
+        
+        <div id="forgot-step-1">
+          <form onsubmit="handleForgotPassword(event)">
+            <div class="form-group">
+              <label class="form-label">اسم المستخدم</label>
+              <input type="text" name="username" required class="form-input">
+            </div>
+            <button type="submit" class="btn-primary">التالي ←</button>
+          </form>
+        </div>
+        
+        <div id="forgot-step-2" class="hidden">
+          <form onsubmit="handleResetPassword(event)">
+            <input type="hidden" id="reset-username">
+            <p style="background:var(--bg-page);padding:0.75rem 1rem;border-radius:var(--radius-md);margin-bottom:1rem;font-size:0.82rem;">
+              <strong>سؤال الأمان:</strong><br>
+              <span id="security-question-text" style="color:var(--accent);"></span>
+            </p>
+            <div class="form-group">
+              <label class="form-label">الإجابة</label>
+              <input type="text" name="securityAnswer" required class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">كلمة المرور الجديدة</label>
+              <input type="password" name="newPassword" required minlength="8" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">تأكيد كلمة المرور</label>
+              <input type="password" name="confirmPassword" required minlength="8" class="form-input">
+            </div>
+            <button type="submit" class="btn-primary">إعادة التعيين</button>
+          </form>
+        </div>
+        
+        <div class="text-center" style="margin-top:1.5rem;">
+          <a href="#" onclick="showLogin(); return false;" 
+             style="color:var(--accent);font-size:0.88rem;">← العودة لتسجيل الدخول</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===========================
+       لوحة التحكم
+       =========================== -->
+  <div id="dashboard-page" class="hidden">
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div class="topbar-content">
+        <div class="topbar-left">
+          <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="فتح القائمة">☰</button>
+          <div class="topbar-brand">
+            <h2>h&amp;D <span class="sub">store</span></h2>
+            <p>v5.0 Pro</p>
+          </div>
+        </div>
+        
+        <div class="topbar-actions">
+          <!-- الإشعارات -->
+          <div class="notifications-btn">
+            <button onclick="toggleNotifications()" class="nav-icon-btn" aria-label="الإشعارات">
+              🔔
+              <span id="notifications-badge" class="nav-badge" style="display:none;">0</span>
+            </button>
+            <div id="notifications-dropdown" class="notifications-dropdown hidden">
+              <div class="dropdown-header">
+                <h3>الإشعارات</h3>
+                <button class="clear-btn" onclick="markAllNotifsRead()">تعيين الكل</button>
+              </div>
+              <div id="notifications-list"></div>
+            </div>
+          </div>
+          
+          <!-- قائمة المستخدم -->
+          <div class="user-menu" id="user-menu">
+            <button onclick="toggleUserMenu()" class="user-menu-trigger" aria-label="قائمة المستخدم">
+              <div class="user-avatar" id="current-user-avatar">A</div>
+              <div class="user-info">
+                <div class="u-name" id="current-user-name">المستخدم</div>
+                <div class="u-role" id="current-user-role">دور</div>
+              </div>
+              <span class="user-arrow">▼</span>
+            </button>
+            <div id="user-menu-dropdown" class="user-menu-dropdown hidden">
+              <div class="dropdown-header user">
+                <h3 id="dropdown-user-name">المستخدم</h3>
+                <div class="user-email" id="dropdown-user-role">email</div>
+              </div>
+              <button class="dropdown-item" onclick="openChangePasswordModal()">🔑 تغيير كلمة المرور</button>
+              <a href="index.html" target="_blank" class="dropdown-item">🏪 زيارة المتجر</a>
+              <button class="dropdown-item danger" onclick="logout()">🚪 تسجيل الخروج</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Sidebar مع زر X -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="admin-sidebar-header">
+        <h2>القائمة</h2>
+        <button class="admin-sidebar-close" onclick="toggleSidebar()" aria-label="إغلاق القائمة">✕</button>
+      </div>
+      
+      <nav>
+        <a href="#" onclick="showSection('overview'); closeSidebarMobile(); return false;" data-section="overview" class="admin-nav-link active">
+          <span class="icon">📊</span> <span>نظرة عامة</span>
+        </a>
+        <a href="#" onclick="showSection('products'); closeSidebarMobile(); return false;" data-section="products" class="admin-nav-link">
+          <span class="icon">📦</span> <span>المنتجات</span>
+        </a>
+        <a href="#" onclick="showSection('orders'); closeSidebarMobile(); return false;" data-section="orders" class="admin-nav-link">
+          <span class="icon">🛒</span> <span>الطلبات</span>
+        </a>
+        <a href="#" onclick="showSection('categories'); closeSidebarMobile(); return false;" data-section="categories" class="admin-nav-link">
+          <span class="icon">🗂️</span> <span>الفئات</span>
+        </a>
+        <a href="#" onclick="showSection('users'); closeSidebarMobile(); return false;" data-section="users" class="admin-nav-link">
+          <span class="icon">👥</span> <span>المستخدمين</span>
+        </a>
+        <a href="#" onclick="showSection('coupons'); closeSidebarMobile(); return false;" data-section="coupons" class="admin-nav-link">
+          <span class="icon">🎟️</span> <span>الكوبونات</span>
+        </a>
+        <a href="#" onclick="showSection('reports'); closeSidebarMobile(); return false;" data-section="reports" class="admin-nav-link">
+          <span class="icon">📈</span> <span>التقارير</span>
+        </a>
+        <a href="#" onclick="showSection('settings'); closeSidebarMobile(); return false;" data-section="settings" class="admin-nav-link">
+          <span class="icon">⚙️</span> <span>إعدادات الموقع</span>
+        </a>
+        <a href="#" onclick="showSection('theme'); closeSidebarMobile(); return false;" data-section="theme" class="admin-nav-link">
+          <span class="icon">🎨</span> <span>المظهر</span>
+        </a>
+        <a href="#" onclick="showSection('content'); closeSidebarMobile(); return false;" data-section="content" class="admin-nav-link">
+          <span class="icon">📝</span> <span>المحتوى</span>
+        </a>
+        <a href="#" onclick="showSection('activity'); closeSidebarMobile(); return false;" data-section="activity" class="admin-nav-link">
+          <span class="icon">📜</span> <span>سجل النشاطات</span>
+        </a>
+        <a href="#" onclick="showSection('audit'); closeSidebarMobile(); return false;" data-section="audit" class="admin-nav-link">
+          <span class="icon">🔍</span> <span>سجل التدقيق</span>
+        </a>
+        <a href="#" onclick="showSection('security'); closeSidebarMobile(); return false;" data-section="security" class="admin-nav-link">
+          <span class="icon">🔐</span> <span>الأمان</span>
+        </a>
+        <a href="#" onclick="showSection('backup'); closeSidebarMobile(); return false;" data-section="backup" class="admin-nav-link">
+          <span class="icon">💾</span> <span>النسخ الاحتياطي</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      
+      <!-- 1. النظرة العامة -->
+      <section id="section-overview" class="admin-section">
+        <div class="welcome-bar">
+          <div class="welcome-content">
+            <h2>أهلاً بك، <span id="overview-user-name">المدير</span>! 👋</h2>
+            <p>إليك نظرة شاملة على متجرك اليوم</p>
+          </div>
+          <div class="welcome-icon">📊</div>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="stat-products">0</div>
+            <div class="stat-label">المنتجات</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-value" id="stat-orders">0</div>
+            <div class="stat-label">الطلبات</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value sm" id="stat-revenue">0</div>
+            <div class="stat-label">الإيرادات</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🆕</div>
+            <div class="stat-value" id="stat-new-orders">0</div>
+            <div class="stat-label">طلبات جديدة</div>
+          </div>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-value" id="stat-today-orders">0</div>
+            <div class="stat-label">طلبات اليوم</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📆</div>
+            <div class="stat-value sm" id="stat-month-revenue">0</div>
+            <div class="stat-label">إيرادات الشهر</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="stat-users">0</div>
+            <div class="stat-label">المستخدمين</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🟢</div>
+            <div class="stat-value" id="stat-online">0</div>
+            <div class="stat-label">المتصلين</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. المنتجات -->
+      <section id="section-products" class="admin-section hidden">
+        <div class="section-header-row">
+          <div>
+            <h1>📦 إدارة المنتجات</h1>
+            <p>أضف، عدل، أو احذف منتجاتك</p>
+          </div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button onclick="exportProducts()" class="btn-secondary">📥 تصدير</button>
+            <button onclick="openAddProductModal()" class="btn-primary">➕ إضافة</button>
+          </div>
+        </div>
+        
+        <div class="filters-bar">
+          <input type="text" id="product-search" oninput="searchProducts()" placeholder="🔍 بحث..." class="form-input">
+          <select id="product-filter-category" onchange="searchProducts()" class="form-input">
+            <option value="">كل الفئات</option>
+          </select>
+          <select id="product-filter-stock" onchange="searchProducts()" class="form-input">
+            <option value="">كل المخزون</option>
+            <option value="low">مخزون منخفض</option>
+            <option value="out">نفذ</option>
+          </select>
+        </div>
+        
+        <div class="admin-table-wrapper">
+          <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>الصورة</th>
+                  <th>المنتج</th>
+                  <th>السعر</th>
+                  <th>الفئة</th>
+                  <th>المخزون</th>
+                  <th>مميز</th>
+                  <th>الحالة</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="products-table-body">
+                <tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text-muted);">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. الطلبات -->
+      <section id="section-orders" class="admin-section hidden">
+        <div class="section-header-row">
+          <div>
+            <h1>🛒 إدارة الطلبات</h1>
+            <p>جميع طلبات العملاء</p>
+          </div>
+        </div>
+        
+        <div class="admin-table-wrapper">
+          <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>رقم الطلب</th>
+                  <th>العميل</th>
+                  <th>عدد</th>
+                  <th>الإجمالي</th>
+                  <th>الحالة</th>
+                  <th>تحديث</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="orders-table-body">
+                <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted);">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. الفئات -->
+      <section id="section-categories" class="admin-section hidden">
+        <div class="section-header-row">
+          <div>
+            <h1>🗂️ إدارة الفئات</h1>
+            <p>أضف، عدل، أو احذف فئات المنتجات</p>
+          </div>
+          <button onclick="openAddCategoryModal()" class="btn-primary">➕ إضافة فئة</button>
+        </div>
+        <div id="categories-list"></div>
+      </section>
+
+      <!-- 5. المستخدمين -->
+      <section id="section-users" class="admin-section hidden">
+        <div class="section-header-row">
+          <div>
+            <h1>👥 إدارة المستخدمين</h1>
+            <p>إدارة فريق العمل والصلاحيات</p>
+          </div>
+          <button onclick="openAddUserModal()" class="btn-primary">➕ إضافة مستخدم</button>
+        </div>
+        <div class="admin-table-wrapper">
+          <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>المستخدم</th>
+                  <th>البريد</th>
+                  <th>الدور</th>
+                  <th>الحالة</th>
+                  <th>الحساب</th>
+                  <th>آخر دخول</th>
+                  <th>إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body">
+                <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text-muted);">جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. الكوبونات -->
+      <section id="section-coupons" class="admin-section hidden">
+        <div class="section-header-row">
+          <div>
+            <h1>🎟️ إدارة الكوبونات</h1>
+            <p>إنشاء أكواد الخصم</p>
+          </div>
+          <button onclick="openAddCouponModal()" class="btn-primary">➕ إضافة كوبون</button>
+        </div>
+        <div id="coupons-list"></div>
+      </section>
+
+      <!-- 7. التقارير -->
+      <section id="section-reports" class="admin-section hidden">
+        <div class="section-header-row">
+          <div>
+            <h1>📈 التقارير</h1>
+            <p>تحليلات مفصلة</p>
+          </div>
+          <button onclick="exportReport('csv')" class="btn-primary">📊 تصدير</button>
+        </div>
+        
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="rep-month-orders">0</div>
+            <div class="stat-label">طلبات الشهر</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value sm" id="rep-month-revenue">0</div>
+            <div class="stat-label">إيرادات الشهر</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="rep-total-customers">0</div>
+            <div class="stat-label">عملاء فريدون</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value sm" id="rep-avg-order">0</div>
+            <div class="stat-label">متوسط الطلب</div>
+          </div>
+        </div>
+        
+        <div class="form-grid" style="margin-top:1.5rem;">
+          <div class="settings-card">
+            <h2><span class="h-icon">🏆</span> الأكثر مبيعاً</h2>
+            <div id="top-products"></div>
+          </div>
+          <div class="settings-card">
+            <h2><span class="h-icon">🕐</span> آخر الطلبات</h2>
+            <div id="recent-orders"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 8. إعدادات الموقع -->
+      <section id="section-settings" class="admin-section hidden">
+        <h1>⚙️ إعدادات الموقع</h1>
+        <p>تحكم في كل تفاصيل موقعك</p>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">🏷️</span> الهوية</h2>
+          <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">الاسم بالعربي</label><input type="text" id="set-brand-name-ar" class="form-input"></div>
+            <div class="form-group"><label class="form-label">الإنجليزي</label><input type="text" id="set-brand-name-en" class="form-input"></div>
+            <div class="form-group"><label class="form-label">الشعار</label><input type="text" id="set-brand-logo" class="form-input"></div>
+            <div class="form-group"><label class="form-label">الشعار التعريفي</label><input type="text" id="set-brand-tagline" class="form-input"></div>
+          </div>
+          <button onclick="saveSettingsSection('brand')" class="btn-primary">💾 حفظ</button>
+        </div>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">🎯</span> البطل</h2>
+          <div class="form-group"><label class="form-label">العنوان (HTML)</label><input type="text" id="set-hero-title" class="form-input"></div>
+          <div class="form-group"><label class="form-label">الوصف</label><textarea id="set-hero-subtitle" rows="2" class="form-textarea"></textarea></div>
+          <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">نص الزر</label><input type="text" id="set-hero-button" class="form-input"></div>
+            <div class="form-group"><label class="form-label">الشفافية (0-1)</label><input type="number" id="set-hero-overlay" step="0.1" min="0" max="1" class="form-input"></div>
+          </div>
+          <div class="form-group"><label class="form-label">رابط الصورة</label><input type="url" id="set-hero-image" class="form-input"></div>
+          <button onclick="saveSettingsSection('hero')" class="btn-primary">💾 حفظ</button>
+        </div>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">📞</span> التواصل</h2>
+          <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">واتساب (كود الدولة)</label><input type="text" id="set-whatsapp" placeholder="201000000000" class="form-input"></div>
+            <div class="form-group"><label class="form-label">رسالة واتساب</label><input type="text" id="set-whatsapp-msg" class="form-input"></div>
+            <div class="form-group"><label class="form-label">الهاتف</label><input type="text" id="set-phone" class="form-input"></div>
+            <div class="form-group"><label class="form-label">البريد</label><input type="email" id="set-email" class="form-input"></div>
+            <div class="form-group full"><label class="form-label">العنوان</label><input type="text" id="set-address" class="form-input"></div>
+          </div>
+          <button onclick="saveSettingsSection('contact')" class="btn-primary">💾 حفظ</button>
+        </div>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">🔍</span> SEO</h2>
+          <div class="form-group"><label class="form-label">عنوان الصفحة</label><input type="text" id="set-seo-title" class="form-input"></div>
+          <div class="form-group"><label class="form-label">الوصف</label><textarea id="set-seo-desc" rows="2" class="form-textarea"></textarea></div>
+          <div class="form-group"><label class="form-label">الكلمات المفتاحية</label><input type="text" id="set-seo-keywords" class="form-input"></div>
+          <button onclick="saveSettingsSection('seo')" class="btn-primary">💾 حفظ</button>
+        </div>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">📢</span> الإعلان العلوي</h2>
+          <label class="checkbox-row" style="margin-bottom:0.75rem;">
+            <input type="checkbox" id="set-announcement-enabled"> 
+            <span>تفعيل الإعلان</span>
+          </label>
+          <div class="form-group">
+            <label class="form-label">نص الإعلان</label>
+            <input type="text" id="set-announcement-text" class="form-input">
+          </div>
+          <button onclick="saveSettingsSection('announcement')" class="btn-primary">💾 حفظ</button>
+        </div>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">📄</span> الفوتر</h2>
+          <div class="form-group"><label class="form-label">من نحن</label><textarea id="set-footer-about" rows="2" class="form-textarea"></textarea></div>
+          <div class="form-group"><label class="form-label">حقوق النشر</label><input type="text" id="set-footer-copyright" class="form-input"></div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">هاتف</label><input type="text" id="set-footer-phone" class="form-input"></div>
+            <div class="form-group"><label class="form-label">بريد</label><input type="email" id="set-footer-email" class="form-input"></div>
+            <div class="form-group"><label class="form-label">عنوان</label><input type="text" id="set-footer-address" class="form-input"></div>
+          </div>
+          <button onclick="saveSettingsSection('footer')" class="btn-primary">💾 حفظ</button>
+        </div>
+      </section>
+
+      <!-- 9. المظهر -->
+      <section id="section-theme" class="admin-section hidden">
+        <h1>🎨 المظهر</h1>
+        <p>خصص ألوان ومظهر متجرك</p>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">🎨</span> الألوان</h2>
+          <div class="form-grid" style="grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));">
+            <div class="form-group"><label class="form-label">الأساسي</label><input type="color" id="color-primary"></div>
+            <div class="form-group"><label class="form-label">الخلفية</label><input type="color" id="color-background"></div>
+            <div class="form-group"><label class="form-label">المميز</label><input type="color" id="color-accent"></div>
+            <div class="form-group"><label class="form-label">النص</label><input type="color" id="color-text"></div>
+            <div class="form-group"><label class="form-label">نص ثانوي</label><input type="color" id="color-text-muted"></div>
+          </div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button onclick="saveTheme()" class="btn-primary">💾 حفظ</button>
+            <button onclick="resetTheme()" class="btn-secondary">↩️ استعادة</button>
+          </div>
+        </div>
+        
+        <div class="settings-card">
+          <div class="section-header-row" style="margin-bottom:1rem;">
+            <h2 style="margin:0;"><span class="h-icon">✨</span> المميزات</h2>
+            <button onclick="addFeature()" class="btn-primary">➕ إضافة</button>
+          </div>
+          <div id="features-list"></div>
+        </div>
+        
+        <div class="settings-card">
+          <div class="section-header-row" style="margin-bottom:1rem;">
+            <h2 style="margin:0;"><span class="h-icon">📑</span> أعمدة الفوتر</h2>
+            <button onclick="addFooterColumn()" class="btn-primary">➕ إضافة عمود</button>
+          </div>
+          <div id="footer-columns-list"></div>
+        </div>
+      </section>
+
+      <!-- 10. المحتوى -->
+      <section id="section-content" class="admin-section hidden">
+        <h1>📝 المحتوى</h1>
+        <p>الصفحات القانونية</p>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">📜</span> الصفحات</h2>
+          <p style="color:var(--text-muted);margin-bottom:1rem;font-size:0.9rem;">صفحات سياسة الخصوصية والشروط والأحكام</p>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <a href="privacy.html" target="_blank" class="btn-secondary">سياسة الخصوصية ↗</a>
+            <a href="terms.html" target="_blank" class="btn-secondary">الشروط والأحكام ↗</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- 11. سجل النشاطات -->
+      <section id="section-activity" class="admin-section hidden">
+        <h1>📜 سجل النشاطات</h1>
+        <p>آخر النشاطات</p>
+        <div id="activity-log-list"></div>
+      </section>
+
+      <!-- 12. سجل التدقيق -->
+      <section id="section-audit" class="admin-section hidden">
+        <h1>🔍 سجل التدقيق</h1>
+        <p>سجل تفصيلي بالعمليات الحساسة</p>
+        <div id="audit-log-list"></div>
+      </section>
+
+      <!-- 13. الأمان -->
+      <section id="section-security" class="admin-section hidden">
+        <h1>🔐 الأمان والجلسات</h1>
+        <p>إعدادات الأمان وإدارة الجلسات</p>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">⚙️</span> الإعدادات</h2>
+          <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">مدة الجلسة (دقيقة)</label><input type="number" id="set-session-timeout" class="form-input"></div>
+            <div class="form-group"><label class="form-label">أقصى محاولات</label><input type="number" id="set-max-attempts" class="form-input"></div>
+            <div class="form-group"><label class="form-label">مدة القفل (دقيقة)</label><input type="number" id="set-lockout-duration" class="form-input"></div>
+            <div class="form-group"><label class="form-label">الحد الأدنى لكلمة المرور</label><input type="number" id="set-min-password-length" class="form-input"></div>
+          </div>
+          <label class="checkbox-row">
+            <input type="checkbox" id="set-strong-password"> 
+            <span>طلب كلمة مرور قوية</span>
+          </label>
+          <button onclick="saveSettingsSection('security')" class="btn-primary" style="margin-top:1rem;">💾 حفظ</button>
+        </div>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">🔐</span> الجلسات النشطة</h2>
+          <div id="active-sessions-list"></div>
+        </div>
+      </section>
+
+      <!-- 14. النسخ الاحتياطي -->
+      <section id="section-backup" class="admin-section hidden">
+        <h1>💾 النسخ الاحتياطي</h1>
+        <p>تصدير واستيراد البيانات</p>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">📤</span> تصدير</h2>
+          <p style="color:var(--text-muted);margin-bottom:1rem;font-size:0.9rem;">تنزيل نسخة احتياطية كاملة</p>
+          <button onclick="exportAllData()" class="btn-primary">📥 تصدير النسخة</button>
+        </div>
+        
+        <div class="settings-card">
+          <h2><span class="h-icon">📥</span> استيراد</h2>
+          <input type="file" accept=".json" onchange="importDataAction(this)" class="form-input">
+        </div>
+        
+        <div class="danger-zone">
+          <h2>⚠️ منطقة الخطر</h2>
+          <p>حذف جميع البيانات نهائياً</p>
+          <button onclick="resetAllData()" class="btn-danger">🗑️ حذف جميع البيانات</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===========================
+       النوافذ المنبثقة - مع X واضح
+       =========================== -->
+  
+  <!-- نافذة تغيير كلمة المرور -->
+  <div id="change-password-modal" class="modal-overlay">
+    <div class="modal-content small">
+      <div class="modal-header">
+        <h2>🔑 تغيير كلمة المرور</h2>
+        <button class="modal-close-btn" onclick="closeChangePasswordModal()" aria-label="إغلاق">✕</button>
+      </div>
+      <form id="change-password-form" onsubmit="handleChangePassword(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">كلمة المرور الحالية</label>
+            <input type="password" name="oldPassword" required class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">كلمة المرور الجديدة</label>
+            <input type="password" name="newPassword" required minlength="8" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">تأكيد كلمة المرور</label>
+            <input type="password" name="confirmPassword" required minlength="8" class="form-input">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeChangePasswordModal()" class="btn-secondary">إلغاء</button>
+          <button type="submit" class="btn-primary">💾 تغيير</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- نافذة المستخدم -->
+  <div id="user-modal" class="modal-overlay">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h2 id="user-form-title">إضافة مستخدم جديد</h2>
+        <button class="modal-close-btn" onclick="closeUserModal()" aria-label="إغلاق">✕</button>
+      </div>
+      <form id="user-form" onsubmit="saveUser(event)">
+        <div class="modal-body">
+          <div class="form-grid-2">
+            <div class="form-group"><label class="form-label">الاسم *</label><input type="text" name="name" required class="form-input"></div>
+            <div class="form-group"><label class="form-label">اسم المستخدم (إنجليزي) *</label><input type="text" name="username" required pattern="[a-zA-Z0-9_]+" class="form-input"></div>
+            <div class="form-group"><label class="form-label">البريد *</label><input type="email" name="email" required class="form-input"></div>
+            <div class="form-group"><label class="form-label">الجوال</label><input type="tel" name="phone" class="form-input"></div>
+            <div class="form-group"><label class="form-label">كلمة المرور <span id="user-password-required">*</span></label><input type="password" name="password" class="form-input" minlength="8" placeholder="اتركه فارغاً للتعديل"></div>
+            <div class="form-group"><label class="form-label">الدور *</label><select name="role" id="user-role" required class="form-input"></select></div>
+            <div class="form-group full"><label class="form-label">نبذة</label><textarea name="bio" rows="2" class="form-textarea"></textarea></div>
+            <div class="form-group full"><label class="form-label">سؤال الأمان *</label>
+              <select name="securityQuestion" required class="form-input">
+                <option value="">اختر سؤالاً...</option>
+                <option value="ما هو اسم مدينتك المفضلة؟">ما هو اسم مدينتك المفضلة؟</option>
+                <option value="ما هو لونك المفضل؟">ما هو لونك المفضل؟</option>
+                <option value="ما هو اسم حيوانك الأليف؟">ما هو اسم حيوانك الأليف؟</option>
+              </select>
+            </div>
+            <div class="form-group full"><label class="form-label">إجابة سؤال الأمان *</label><input type="text" name="securityAnswer" required class="form-input"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeUserModal()" class="btn-secondary">إلغاء</button>
+          <button type="submit" class="btn-primary">💾 حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- نافذة المنتج -->
+  <div id="product-form-modal" class="modal-overlay">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h2 id="product-form-title">إضافة منتج جديد</h2>
+        <button class="modal-close-btn" onclick="closeProductForm()" aria-label="إغلاق">✕</button>
+      </div>
+      <form id="product-form" onsubmit="saveProduct(event)">
+        <div class="modal-body">
+          <div class="form-grid-2">
+            <div class="form-group full"><label class="form-label">اسم المنتج *</label><input type="text" name="name" id="p-name" required class="form-input"></div>
+            <div class="form-group"><label class="form-label">السعر (ج.م) *</label><input type="number" name="price" id="p-price" step="0.01" required min="0" class="form-input"></div>
+            <div class="form-group"><label class="form-label">السعر القديم</label><input type="number" name="p-old-price" id="p-old-price" step="0.01" min="0" class="form-input"></div>
+            <div class="form-group"><label class="form-label">SKU</label><input type="text" name="sku" id="p-sku" class="form-input"></div>
+            <div class="form-group"><label class="form-label">الكمية *</label><input type="number" name="stock" id="p-stock" required min="0" value="1" class="form-input"></div>
+            <div class="form-group"><label class="form-label">الفئة *</label><select name="category" id="p-category" required class="form-input"></select></div>
+            <div class="form-group"><label class="form-label">الوسوم</label><input type="text" name="tags" id="p-tags" class="form-input" placeholder="افصل بفاصلة"></div>
+            <div class="form-group full"><label class="form-label">المقاسات *</label><input type="text" name="sizes" id="p-sizes" required class="form-input" placeholder="S, M, L, XL"></div>
+            <div class="form-group full"><label class="form-label">الألوان *</label><input type="text" name="colors" id="p-colors" required class="form-input" placeholder="أسود, أبيض, بيج"></div>
+            <div class="form-group full"><label class="form-label">الوصف *</label><textarea name="description" id="p-description" required rows="3" class="form-textarea"></textarea></div>
+            <div class="form-group full">
+              <label class="form-label">صورة المنتج *</label>
+              <input type="url" id="image-url-input" onchange="previewImageFromUrl()" placeholder="رابط الصورة" class="form-input" style="margin-bottom:0.5rem;">
+              <input type="file" id="image-file-input" accept="image/*" onchange="previewUploadedImage(this)" class="form-input">
+              <div class="text-center"><img id="image-preview" class="image-preview hidden"></div>
+            </div>
+            <div class="form-group full" style="display:flex;gap:1.5rem;flex-wrap:wrap;">
+              <label class="checkbox-row"><input type="checkbox" id="p-featured"> <span>منتج مميز ⭐</span></label>
+              <label class="checkbox-row"><input type="checkbox" id="p-active" checked> <span>نشط</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeProductForm()" class="btn-secondary">إلغاء</button>
+          <button type="submit" class="btn-primary">💾 حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- نافذة الفئة -->
+  <div id="category-modal" class="modal-overlay">
+    <div class="modal-content small">
+      <div class="modal-header">
+        <h2 id="category-modal-title">إضافة فئة</h2>
+        <button class="modal-close-btn" onclick="closeCategoryModal()" aria-label="إغلاق">✕</button>
+      </div>
+      <form onsubmit="saveCategory(event)">
+        <div class="modal-body">
+          <input type="hidden" id="cat-id">
+          <div class="form-group"><label class="form-label">اسم الفئة *</label><input type="text" id="cat-name" required class="form-input"></div>
+          <div class="form-group"><label class="form-label">Slug</label><input type="text" id="cat-slug" class="form-input"></div>
+          <div class="form-group"><label class="form-label">الأيقونة (Emoji)</label><input type="text" id="cat-icon" placeholder="👔" class="form-input" style="text-align:center;font-size:1.5rem;"></div>
+          <label class="checkbox-row"><input type="checkbox" id="cat-visible" checked> <span>ظاهر في الموقع</span></label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeCategoryModal()" class="btn-secondary">إلغاء</button>
+          <button type="submit" class="btn-primary">💾 حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- نافذة الكوبون -->
+  <div id="coupon-modal" class="modal-overlay">
+    <div class="modal-content small">
+      <div class="modal-header">
+        <h2>إضافة كوبون</h2>
+        <button class="modal-close-btn" onclick="closeCouponModal()" aria-label="إغلاق">✕</button>
+      </div>
+      <form onsubmit="saveCoupon(event)">
+        <div class="modal-body">
+          <div class="form-group"><label class="form-label">كود الكوبون *</label><input type="text" id="coupon-code" required class="form-input" style="text-transform:uppercase;"></div>
+          <div class="form-group"><label class="form-label">نوع الخصم *</label>
+            <select id="coupon-type" class="form-input">
+              <option value="percent">نسبة %</option>
+              <option value="fixed">مبلغ ثابت</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">قيمة الخصم *</label><input type="number" id="coupon-value" step="0.01" required class="form-input"></div>
+          <div class="form-group"><label class="form-label">تاريخ الانتهاء</label><input type="date" id="coupon-expiry" class="form-input"></div>
+          <div class="form-group"><label class="form-label">الحد الأقصى</label><input type="number" id="coupon-max" min="1" class="form-input" placeholder="اتركه فارغاً لعدد غير محدود"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeCouponModal()" class="btn-secondary">إلغاء</button>
+          <button type="submit" class="btn-primary">💾 حفظ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
