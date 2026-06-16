@@ -6,13 +6,15 @@
 // إعدادات Firebase
 // ===========================
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abc123"
-};
+    apiKey: "AIzaSyAIETJop0R2CHfa781VlMrGFNjLuYsb9xg",
+    authDomain: "hop-dragon-1e26d.firebaseapp.com",
+    databaseURL: "https://hop-dragon-1e26d-default-rtdb.firebaseio.com",
+    projectId: "hop-dragon-1e26d",
+    storageBucket: "hop-dragon-1e26d.firebasestorage.app",
+    messagingSenderId: "748639559846",
+    appId: "1:748639559846:web:7500e2cea27ff9c9421467",
+    measurementId: "G-MY4WZMWZDJ"
+  };
 
 // تهيئة Firebase (يتم تحميلها من CDN)
 let db, auth, storage;
